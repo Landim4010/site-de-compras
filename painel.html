@@ -1,79 +1,66 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Login</title>
+  <meta charset="UTF-8">
+  <title>Painel de Pedidos</title>
+  <style>
+    body { font-family: Arial; margin: 20px; background: #fff; }
+    table { width:100%; border-collapse: collapse; margin-top: 20px;}
+    th,td { border:1px solid #ddd; padding:10px; text-align:center;}
+    th { background:#f0f0f0; }
+    h1 { margin-bottom: 10px; }
+  </style>
 </head>
 <body>
 
-<h2>Login para ver o painel</h2>
+<h1>📦 Pedidos Recebidos</h1>
+<p>Atualiza automaticamente quando alguém envia.</p>
 
-<input type="password" id="senha" placeholder="Digite a senha">
-<button onclick="login()">Entrar</button>
-
-<p id="erro" style="color:red; display:none;">Senha incorreta</p>
-
-<script>
-const senhaCorreta = "12345"; // <- TROQUE AQUI
-function login(){
-    const senha = document.getElementById("senha").value;
-    if(senha === senhaCorreta){
-        localStorage.setItem("logado", "sim");
-        window.location.href = "painel.html";
-    } else {
-        document.getElementById("erro").style.display = "block";
-    }
-}
-</script>
-
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Painel de Solicitações</title>
-</head>
-<body>
-
-<script>
-// impede acesso sem login
-if(localStorage.getItem("logado") !== "sim"){
-    window.location.href = "login.html";
-}
-</script>
-
-<h2>📋 Pedidos recebidos</h2>
-
-<table border="1" cellspacing="0" cellpadding="10">
-<thead>
-<tr>
-<th>Nome</th>
-<th>WhatsApp</th>
-<th>Pedido</th>
-<th>Data</th>
-</tr>
-</thead>
-<tbody id="lista"></tbody>
+<table>
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>Produto</th>
+      <th>Qtd</th>
+      <th>Contato</th>
+      <th>Data</th>
+    </tr>
+  </thead>
+  <tbody id="listaPedidos"></tbody>
 </table>
 
-<button onclick="localStorage.removeItem('pedidos'); location.reload();">🗑 Apagar tudo</button>
-<button onclick="localStorage.removeItem('logado'); location.href='login.html';">🚪 Sair</button>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
 <script>
-const lista = document.getElementById("lista");
-const pedidos = JSON.parse(localStorage.getItem("pedidos")) || [];
+const firebaseConfig = {
+  apiKey: "COLE SUA API AQUI",
+  authDomain: "SEU_PROJETO.firebaseapp.com",
+  projectId: "SEU_PROJECT_ID",
+};
 
-pedidos.forEach(p => {
-    lista.innerHTML += `
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const lista = document.getElementById("listaPedidos");
+
+db.collection("pedidos")
+  .orderBy("data", "desc")
+  .onSnapshot(snapshot => {
+    lista.innerHTML = "";
+    snapshot.forEach(doc => {
+      const p = doc.data();
+      lista.innerHTML += `
         <tr>
-            <td>${p.nome}</td>
-            <td>${p.whatsapp}</td>
-            <td>${p.pedido}</td>
-            <td>${p.data}</td>
-        </tr>
-    `;
-});
+          <td>${p.nome}</td>
+          <td>${p.produto}</td>
+          <td>${p.quantidade}</td>
+          <td>${p.contato}</td>
+          <td>${new Date(p.data).toLocaleString()}</td>
+        </tr>`;
+    });
+  });
 </script>
 
 </body>
