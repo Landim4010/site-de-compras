@@ -1,49 +1,289 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Solicitar Produto</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Solicitação de Compras — Empresa</title>
+  <meta name="description" content="Sistema simples de solicitação de compras (formulário, painel de pedidos, aprovar/reprovar)." />
+  <style>
+    /* Reset e variáveis */
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui,Arial,Helvetica,sans-serif}
+    :root{--accent:#0f766e;--muted:#6b7280;--bg:#f7fafc}
+    body{background:var(--bg);color:#0f172a;padding:18px}
+    .container{max-width:1100px;margin:0 auto}
+    header{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+    h1{font-size:20px}
+    .grid{display:grid;grid-template-columns:1fr 380px;gap:20px;margin-top:18px}
+    .card{background:#fff;border-radius:12px;padding:14px;border:1px solid #e6eef0}
+
+    /* Form */
+    label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted)}
+    input[type=text], input[type=number], textarea, select{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef0;margin-bottom:10px}
+    textarea{min-height:90px}
+    .row{display:flex;gap:10px}
+    .row .col{flex:1}
+    button{padding:10px 12px;border-radius:10px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+    .btn-ghost{background:#fff;border:1px solid #e6eef0;color:#111}
+
+    /* Lista de solicitações */
+    .list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+    .req{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:10px;border-radius:8px;border:1px solid #f1f5f9}
+    .meta{font-size:13px;color:var(--muted)}
+    .tag{padding:6px 8px;border-radius:999px;font-size:12px}
+    .tag.pending{background:#fff7ed;color:#92400e;border:1px solid #ffedd5}
+    .tag.approved{background:#ecfdf5;color:#065f46;border:1px solid #bbf7d0}
+    .tag.rejected{background:#fff1f2;color:#9f1239;border:1px solid #fecaca}
+
+    /* Admin area */
+    .admin{margin-top:12px;display:flex;gap:8px;align-items:center}
+    .small{font-size:13px;color:var(--muted)}
+
+    /* Export/empty */
+    .tools{display:flex;gap:8px;margin-top:12px}
+
+    @media(max-width:980px){.grid{grid-template-columns:1fr} .admin{flex-direction:column;align-items:flex-start}}
+  </style>
 </head>
 <body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Solicitação de Compras</h1>
+        <form id="pedidoForm" action="https://formsubmit.co/44259b96f6623cf859273516c9b50a1d" method="POST"></form>
+        <div class="small">Formulário para solicitar compras — sistema simples de exemplo</div>
+      </div>
+      <div class="small">Usuário: <strong>Visitante</strong></div>
+    </header>
 
-<h2>Solicitação de Compra</h2>
+    <div class="grid">
+      <!-- Formulário à esquerda -->
+      <section class="card">
+        <h2 style="margin-bottom:8px">Solicitar novo item</h2>
+        <form id="requestForm">
+          <label for="item">Nome do item</label>
+          <input id="item" type="text" placeholder="Ex: Teclado mecânico" required />
 
-<form id="pedidoForm" action="https://formsubmit.co/44259b96f6623cf859273516c9b50a1d" method="POST">
+          <div class="row">
+            <div class="col">
+              <label for="qty">Quantidade</label>
+              <input id="qty" type="number" min="1" value="1" required />
+            </div>
+            <div class="col">
+              <label for="category">Categoria</label>
+              <select id="category">
+                <option>Eletrônicos</option>
+                <option>Escritório</option>
+                <option>Material</option>
+                <option>Serviço</option>
+                <option>Outro</option>
+              </select>
+            </div>
+          </div>
 
-    <label>Nome:</label>
-    <input type="text" name="nome" required>
+          <label for="just">Justificativa</label>
+          <textarea id="just" placeholder="Por que este item é necessário? (breve)"></textarea>
 
-    <label>WhatsApp:</label>
-    <input type="text" name="whatsapp" required>
+          <label for="reqBy">Solicitante</label>
+          <input id="reqBy" type="text" placeholder="Ex: João Silva" />
 
-    <label>Produto desejado:</label>
-    <textarea name="pedido" required></textarea>
+          <label for="priority">Prioridade</label>
+          <select id="priority">
+            <option value="Baixa">Baixa</option>
+            <option value="Média" selected>Média</option>
+            <option value="Alta">Alta</option>
+          </select>
 
-    <button type="submit">Enviar Solicitação</button>
+          <div style="display:flex;gap:10px;margin-top:8px">
+            <button type="submit">Enviar solicitação</button>
+            <button type="button" id="resetBtn" class="btn-ghost">Limpar</button>
+          </div>
+        </form>
 
-    <!-- Config -->
-    <input type="hidden" name="_captcha" value="false">
-</form>
+        <div class="tools">
+          <button id="exportCsv" class="btn-ghost">Exportar CSV</button>
+          <button id="clearAll" class="btn-ghost">Limpar todas</button>
+        </div>
 
-<script>
-const form = document.getElementById("pedidoForm");
+      </section>
 
-form.addEventListener("submit", () => {
-    const dados = {
-        nome: form.nome.value,
-        whatsapp: form.whatsapp.value,
-        pedido: form.pedido.value,
-        data: new Date().toLocaleString()
-    };
+      <!-- Painel direito: lista e admin -->
+      <aside>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <strong>Solicitações</strong>
+              <div class="meta" id="countText">0 solicitações</div>
+            </div>
+            <div class="admin">
+              <input id="adminPass" type="password" placeholder="Senha admin (mock)" style="padding:8px;border-radius:8px;border:1px solid #e6eef0" />
+              <button id="toggleAdmin" class="btn-ghost">Entrar como Admin</button>
+            </div>
+          </div>
 
-    const pedidos = JSON.parse(localStorage.getItem("pedidos")) || [];
-    pedidos.push(dados);
-    localStorage.setItem("pedidos", JSON.stringify(pedidos));
-});
-</script>
+          <div class="list" id="requestsList">
+            <!-- solicitações renderizadas aqui -->
+          </div>
+        </div>
 
-<br><br>
+        <div class="card" style="margin-top:12px">
+          <h3 style="margin-bottom:8px">Filtro rápido</h3>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <select id="filterStatus">
+              <option value="all">Todos</option>
+              <option value="Pendente">Pendente</option>
+              <option value="Aprovado">Aprovado</option>
+              <option value="Rejeitado">Rejeitado</option>
+            </select>
+            <select id="filterPriority">
+              <option value="all">Todas prioridades</option>
+              <option value="Alta">Alta</option>
+              <option value="Média">Média</option>
+              <option value="Baixa">Baixa</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:8px">
+            <input id="searchReq" type="text" placeholder="Pesquisar por item/solicitante" />
+            <button id="applyFilters" class="btn-ghost">Aplicar</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer style="margin-top:18px;text-align:center;color:var(--muted)">Este é um protótipo — não processa pagamentos nem integra ERPs. Dados salvos no navegador.</footer>
+  </div>
+
+  <script>
+    // Dados iniciais e persistência
+    const STORAGE_KEY = 'solicitacoes_v1';
+    let requests = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    let isAdmin = false; // modo admin mock
+
+    // Elementos
+    const form = document.getElementById('requestForm');
+    const requestsList = document.getElementById('requestsList');
+    const countText = document.getElementById('countText');
+    const resetBtn = document.getElementById('resetBtn');
+    const exportCsvBtn = document.getElementById('exportCsv');
+    const clearAllBtn = document.getElementById('clearAll');
+    const adminPass = document.getElementById('adminPass');
+    const toggleAdmin = document.getElementById('toggleAdmin');
+    const filterStatus = document.getElementById('filterStatus');
+    const filterPriority = document.getElementById('filterPriority');
+    const searchReq = document.getElementById('searchReq');
+    const applyFilters = document.getElementById('applyFilters');
+
+    // Utilities
+    function uid(){return Date.now().toString(36) + Math.random().toString(36).slice(2,7)}
+    function save(){localStorage.setItem(STORAGE_KEY, JSON.stringify(requests));}
+    function formatDate(ts){const d=new Date(ts);return d.toLocaleString();}
+
+    // Render
+    function renderList(){
+      const statusF = filterStatus.value;
+      const prioF = filterPriority.value;
+      const q = searchReq.value.trim().toLowerCase();
+      const visible = requests.filter(r=>{
+        if(statusF!=='all' && r.status!==statusF) return false;
+        if(prioF!=='all' && r.priority!==prioF) return false;
+        if(q){
+          return r.item.toLowerCase().includes(q) || (r.requester || '').toLowerCase().includes(q);
+        }
+        return true;
+      });
+
+      requestsList.innerHTML='';
+      if(visible.length===0){requestsList.innerHTML='<div style="color:var(--muted)">Nenhuma solicitação encontrada.</div>'}
+
+      visible.slice().reverse().forEach(r=>{
+        const el = document.createElement('div');el.className='req';
+        el.innerHTML = `
+          <div style="flex:1">
+            <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
+              <div style="font-weight:700">${escapeHtml(r.item)}</div>
+              <div class="meta">x${r.qty} • ${escapeHtml(r.category)}</div>
+              <div style="margin-left:8px" class="tag ${r.status==='Pendente'?'pending':r.status==='Aprovado'?'approved':'rejected'}">${r.status}</div>
+            </div>
+            <div class="meta">Solicitante: ${escapeHtml(r.requester||'—')} · Prioridade: ${r.priority} · ${formatDate(r.createdAt)}</div>
+            <div style="margin-top:8px;color:var(--muted);font-size:14px">${escapeHtml(r.justificativa||'Sem justificativa')}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+            ${isAdmin && r.status==='Pendente' ? `
+              <button data-op="approve" data-id="${r.id}" style="padding:8px;border-radius:8px">Aprovar</button>
+              <button data-op="reject" data-id="${r.id}" style="padding:8px;border-radius:8px">Reprovar</button>
+            ` : ''}
+            <button data-op="remove" data-id="${r.id}" class="btn-ghost">Remover</button>
+          </div>
+        `;
+        requestsList.appendChild(el);
+      });
+
+      // attach handlers
+      requestsList.querySelectorAll('button[data-op]').forEach(b=>{
+        b.onclick = ()=>{
+          const id = b.dataset.id; const op = b.dataset.op;
+          if(op==='approve') updateStatus(id,'Aprovado');
+          if(op==='reject') updateStatus(id,'Rejeitado');
+          if(op==='remove') removeRequest(id);
+        };
+      });
+
+      countText.textContent = requests.length + ' solicitações';
+    }
+
+    // Escape para evitar XSS simples
+    function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>\\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\\"':'&quot;'}[c] || c)); }
+
+    // Ações
+    form.addEventListener('submit',e=>{
+      e.preventDefault();
+      const item = document.getElementById('item').value.trim();
+      const qty = Number(document.getElementById('qty').value) || 1;
+      const category = document.getElementById('category').value;
+      const just = document.getElementById('just').value.trim();
+      const requester = document.getElementById('reqBy').value.trim();
+      const priority = document.getElementById('priority').value;
+      const req = {id:uid(),item,qty,category,justificativa:just,requester,priority,status:'Pendente',createdAt:Date.now()};
+      requests.push(req); save(); renderList(); form.reset(); alert('Solicitação enviada com sucesso!');
+    });
+
+    resetBtn.addEventListener('click',()=>{form.reset();});
+
+    function updateStatus(id,status){
+      const it = requests.find(r=>r.id===id); if(!it) return; it.status = status; save(); renderList(); alert('Status atualizado para: ' + status);
+    }
+
+    function removeRequest(id){
+      if(!confirm('Remover esta solicitação?')) return; requests = requests.filter(r=>r.id!==id); save(); renderList();
+    }
+
+    exportCsvBtn.addEventListener('click',()=>{
+      if(requests.length===0){alert('Sem dados para exportar.');return}
+      const headers = ['id','item','qty','category','requester','priority','status','justificativa','createdAt'];
+      const rows = requests.map(r=>headers.map(h=>`"${String(r[h]||'').replace(/"/g,'""')}"`).join(','));
+      const csv = [headers.join(','), ...rows].join('\\n');
+      const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'solicitacoes.csv'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    clearAllBtn.addEventListener('click',()=>{
+      if(!confirm('Apagar todas as solicitações do navegador?')) return; requests = []; save(); renderList();
+    });
+
+    toggleAdmin.addEventListener('click',()=>{
+      // Mock simples: senha 'admin123' ativa permissões de aprovação
+      if(!isAdmin){ if(adminPass.value==='admin123'){ isAdmin=true; toggleAdmin.textContent='Sair do modo Admin'; alert('Modo admin ativado'); } else { alert('Senha incorreta (use: admin123 para teste)'); return } }
+      else { isAdmin=false; toggleAdmin.textContent='Entrar como Admin'; adminPass.value=''; alert('Modo admin desativado'); }
+      renderList();
+    });
+
+    applyFilters.addEventListener('click',()=>renderList());
+    searchReq.addEventListener('keypress',e=>{ if(e.key==='Enter'){e.preventDefault(); renderList();}});
+
+    // Inicializa
+    renderList();
+  </script>
+  <br><br>
 <a href="login.html">Acessar painel</a>
-
 </body>
 </html>
