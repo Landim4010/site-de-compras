@@ -2,55 +2,79 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Painel de Solicitações</title>
-<style>
-body { font-family: Arial; padding: 20px; background: #f7f7f7; }
-table { width: 100%; border-collapse: collapse; background: white; }
-th, td { padding: 10px; border: 1px solid #ccc; }
-button { margin-top: 10px; padding: 10px; cursor: pointer; }
-</style>
+<title>Login</title>
 </head>
 <body>
 
-<h2>📋 Solicitações Recebidas</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Nome</th>
-            <th>WhatsApp</th>
-            <th>Pedido</th>
-            <th>Data</th>
-        </tr>
-    </thead>
-    <tbody id="listaPedidos"></tbody>
+<h2>Login para ver o painel</h2>
+
+<input type="password" id="senha" placeholder="Digite a senha">
+<button onclick="login()">Entrar</button>
+
+<p id="erro" style="color:red; display:none;">Senha incorreta</p>
+
+<script>
+const senhaCorreta = "12345"; // <- TROQUE AQUI
+function login(){
+    const senha = document.getElementById("senha").value;
+    if(senha === senhaCorreta){
+        localStorage.setItem("logado", "sim");
+        window.location.href = "painel.html";
+    } else {
+        document.getElementById("erro").style.display = "block";
+    }
+}
+</script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Painel de Solicitações</title>
+</head>
+<body>
+
+<script>
+// impede acesso sem login
+if(localStorage.getItem("logado") !== "sim"){
+    window.location.href = "login.html";
+}
+</script>
+
+<h2>📋 Pedidos recebidos</h2>
+
+<table border="1" cellspacing="0" cellpadding="10">
+<thead>
+<tr>
+<th>Nome</th>
+<th>WhatsApp</th>
+<th>Pedido</th>
+<th>Data</th>
+</tr>
+</thead>
+<tbody id="lista"></tbody>
 </table>
 
-<button onclick="localStorage.removeItem('pedidos'); location.reload();">
-🗑 Apagar histórico
-</button>
-<button onclick="localStorage.removeItem('logado'); location.href='login.html';">
-🚪 Sair
-</button>
+<button onclick="localStorage.removeItem('pedidos'); location.reload();">🗑 Apagar tudo</button>
+<button onclick="localStorage.removeItem('logado'); location.href='login.html';">🚪 Sair</button>
+
 <script>
-const tbody = document.getElementById("listaPedidos");
+const lista = document.getElementById("lista");
 const pedidos = JSON.parse(localStorage.getItem("pedidos")) || [];
 
 pedidos.forEach(p => {
-    const row = `<tr>
-        <td>${p.nome}</td>
-        <td>${p.whatsapp}</td>
-        <td>${p.pedido}</td>
-        <td>${p.data}</td>
-    </tr>`;
-    tbody.innerHTML += row;
+    lista.innerHTML += `
+        <tr>
+            <td>${p.nome}</td>
+            <td>${p.whatsapp}</td>
+            <td>${p.pedido}</td>
+            <td>${p.data}</td>
+        </tr>
+    `;
 });
 </script>
 
 </body>
-<script>
-// Verifica se usuário está logado
-if (localStorage.getItem("logado") !== "sim") {
-  window.location.href = "login.html";
-}
-</script>
 </html>
