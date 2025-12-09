@@ -1,18 +1,35 @@
-<h2>Solicitar Produto</h2>
+<form id="pedidoForm" action="https://formsubmit.co/landimguilherme09@gmail.com" method="POST">
+    <h2>Solicitar Produto</h2>
 
-<form action="https://formsubmit.co/landimguilherme09@gmail.com" method="POST">
+    <label>Nome:</label>
+    <input type="text" name="Nome" required>
 
-  <label for="nome">Seu Nome:</label>
-  <input type="text" id="nome" name="Nome" placeholder="Digite seu nome" required>
+    <label>WhatsApp:</label>
+    <input type="text" name="WhatsApp" required>
 
-  <label for="contato">WhatsApp:</label>
-  <input type="text" id="contato" name="WhatsApp" placeholder="(xx) xxxxx-xxxx" required>
+    <label>Produto desejado:</label>
+    <textarea name="Pedido" rows="4" required></textarea>
 
-  <label for="produto">Produto que deseja:</label>
-  <textarea id="produto" name="Produto" placeholder="Ex: TV Samsung 50 polegadas..." rows="5" required></textarea>
+    <button type="submit">Enviar Solicitação</button>
 
-  <button type="submit">Enviar Pedido</button>
+    <!-- Config FormSubmit -->
+    <input type="hidden" name="_captcha" value="false">
+    <input type="hidden" name="_template" value="table">
+</form>
+<script>
+const form = document.getElementById("pedidoForm");
 
-  <!-- Configurações opcionais -->
-  <input type="hidden" name="_captcha" value="false">
-  <input type="hidden" name="_template" value="table">
+// Salva localmente
+form.addEventListener("submit", () => {
+    const dados = {
+        nome: form.querySelector("[name='Nome']").value,
+        whatsapp: form.querySelector("[name='WhatsApp']").value,
+        pedido: form.querySelector("[name='Pedido']").value,
+        data: new Date().toLocaleString()
+    };
+
+    let lista = JSON.parse(localStorage.getItem("pedidos")) || [];
+    lista.push(dados);
+    localStorage.setItem("pedidos", JSON.stringify(lista));
+});
+</script>
