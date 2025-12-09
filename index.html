@@ -1,84 +1,18 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solicitação de Compras</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f3f3f3;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background: #4CAF50;
-            color: white;
-            text-align: center;
-            padding: 15px;
-            font-size: 22px;
-        }
-        .container {
-            max-width: 600px;
-            background: white;
-            margin: 30px auto;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        input, textarea, button {
-            width: 100%;
-            margin-top: 10px;
-            padding: 10px;
-            font-size: 16px;
-        }
-        button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            opacity: 0.8;
-        }
-        footer {
-            text-align: center;
-            padding: 10px;
-            background: #ddd;
-            margin-top: 30px;
-        }
-    </style>
-</head>
-<body>
+<h2>Solicitar Produto</h2>
 
-<header>
-    Solicitação de Compras
-</header>
+<form action="https://formsubmit.co/landimguilherme09@gmail.com" method="POST">
 
-<div class="container">
-    <h2>Preencha sua busca:</h2>
-    <form action="https://formsubmit.co/landimguilherme09@gmail.com" method="POST">
+  <label for="nome">Seu Nome:</label>
+  <input type="text" id="nome" name="Nome" placeholder="Digite seu nome" required>
 
-        <label>Seu Nome:</label>
-        <input type="text" name="Nome" required>
+  <label for="contato">WhatsApp:</label>
+  <input type="text" id="contato" name="WhatsApp" placeholder="(xx) xxxxx-xxxx" required>
 
-        <label>Seu WhatsApp:</label>
-        <input type="text" name="WhatsApp" required>
+  <label for="produto">Produto que deseja:</label>
+  <textarea id="produto" name="Produto" placeholder="Ex: TV Samsung 50 polegadas..." rows="5" required></textarea>
 
-        <label>Produto desejado:</label>
-        <textarea name="Pedido" rows="5" placeholder="Ex: celular Samsung, tamanho, cor, modelo..." required></textarea>
+  <button type="submit">Enviar Pedido</button>
 
-        <button type="submit">Enviar Solicitação</button>
-
-        <!-- configurações do FormSubmit -->
-        <input type="hidden" name="_captcha" value="false">
-        <input type="hidden" name="_template" value="basic">
-    </form>
-</div>
-
-<footer>
-    © 2025 - Sistema de Solicitação de Compras
-</footer>
-
-</body>
-</html>
+  <!-- Configurações opcionais -->
+  <input type="hidden" name="_captcha" value="false">
+  <input type="hidden" name="_template" value="table">
